@@ -29,6 +29,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'phone_number',
+        'notify_email',
+        'notify_app',
     ];
 
     /**
@@ -51,6 +54,19 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'notify_email' => 'boolean',
+            'notify_app' => 'boolean',
+        ];
+    }
+
+    /**
+     * Get notification preferences with defaults
+     */
+    public function getNotificationPreferences()
+    {
+        return [
+            'notify_email' => (bool)($this->notify_email ?? true),
+            'notify_app' => (bool)($this->notify_app ?? true),
         ];
     }
 

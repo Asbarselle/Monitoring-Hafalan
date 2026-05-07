@@ -14,6 +14,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * @property string|null $catatan
  * @property \Illuminate\Foundation\Support\Carbon|null $tanggal_setoran
  * @property int|null $nilai
+ * @property \Illuminate\Http\UploadedFile|null $audio
  */
 class StoreHafalanRequest extends FormRequest
 {
@@ -35,6 +36,7 @@ class StoreHafalanRequest extends FormRequest
             'catatan' => 'nullable|string',
             'tanggal_setoran' => 'nullable|date',
             'nilai' => 'nullable|integer|min:0|max:100',
+            'audio' => 'nullable|file|mimes:webm,mp3,wav,m4a|max:51200', // max 50MB
         ];
     }
 }

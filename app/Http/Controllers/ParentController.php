@@ -6,6 +6,8 @@ use App\Models\Santri;
 use App\Models\Hafalan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ParentController extends Controller
 {
@@ -82,5 +84,81 @@ class ParentController extends Controller
             ->groupBy('juz');
 
         return view('parent.santri.show', compact('santri', 'hafalan', 'statistikJuz'));
+    }
+
+    /**
+     * Dengarkan rekaman hafalan
+     */
+    public function listenAudio($hafalanId)
+    {
+        $hafalan = Hafalan::findOrFail($hafalanId);
+        
+        // Authorization: parent can only listen to their own children's recordings
+        $user = Auth::user();
+        $santri = Santri::where('orang_tua_id', $user->id)->where('id', $hafalan->santri_id)->firstOrFail();
+        
+        if (!$hafalan->audio_path || !Storage::disk('public')->exists($hafalan->audio_path)) {
+            abort(404, 'Rekaman audio tidak ditemukan');
+        }
+
+        return response()->file(Storage::disk('public')->path($hafalan->audio_path));
+    }
+
+    /**
+     * Download rekaman hafalan
+     */
+    public function downloadAudio($hafalanId)
+    {
+        $hafalan = Hafalan::findOrFail($hafalanId);
+        
+        // Authorization: parent can only download their own children's recordings
+        $user = Auth::user();
+        $santri = Santri::where('orang_tua_id', $user->id)->where('id', $hafalan->santri_id)->firstOrFail();
+        
+        if (!$hafalan->audio_path || !Storage::disk('public')->exists($hafalan->audio_path)) {
+            abort(404, 'Rekaman audio tidak ditemukan');
+        }
+
+        $filename = $hafalan->audio_filename ?? 'hafalan-' . $hafalan->id . '.webm';
+        
+        return Storage::disk('public')->download(
+            $hafalan->audio_path,
+            $hafalan->santri->nama . '-' . $hafalan->surat . '-' . date('d-m-Y', strtotime($hafalan->tanggal_setoran)) . '.webm'
+        );
+    }
+
+    /**
+     * Tampilkan notifikasi orang tua
+     */
+    public function notifications()
+    {
+        $user = Auth::user();
+        $santri = Santri::where('orang_tua_id', $user->id)->pluck('id');
+        
+        $notifications = \App\Models\HafalanNotification::where('parent_id', $user->id)
+            ->orWhereIn('santri_id', $santri)
+            ->with(['hafalan', 'santri', 'ustadz'])
+            ->latest()
+            ->paginate(20);
+
+        return view('parent.notifications', compact('notifications'));
+    }
+
+    /**
+     * Tandai notifikasi sebagai sudah dibaca
+     */
+    public function markNotificationAsRead($notificationId)
+    {
+        $notification = \App\Models\HafalanNotification::findOrFail($notificationId);
+        
+        // Authorization check
+        $user = Auth::user();
+        if ($notification->parent_id !== $user->id) {
+            abort(403, 'Anda tidak berhak mengakses notifikasi ini');
+        }
+
+        $notification->update(['status' => 'read']);
+
+        return response()->json(['success' => true]);
     }
 }

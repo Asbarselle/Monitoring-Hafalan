@@ -56,6 +56,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     // Hafalan Management
     Route::get('/hafalan', [AdminController::class, 'hafalan'])->name('hafalan');
+    Route::get('/hafalan/export/pdf', [AdminController::class, 'exportHafalanPdf'])->name('hafalan.export-pdf');
 });
 
 // Ustadz Routes
@@ -74,4 +75,8 @@ Route::middleware(['auth', 'role:ustadz'])->prefix('ustadz')->name('ustadz.')->g
 Route::middleware(['auth', 'role:orang_tua'])->prefix('parent')->name('parent.')->group(function () {
     Route::get('/dashboard', [ParentController::class, 'dashboard'])->name('dashboard');
     Route::get('/santri/{id}', [ParentController::class, 'showSantri'])->name('santri.show');
+    Route::get('/hafalan/{hafalanId}/listen', [ParentController::class, 'listenAudio'])->name('hafalan.listen');
+    Route::get('/hafalan/{hafalanId}/download', [ParentController::class, 'downloadAudio'])->name('hafalan.download');
+    Route::get('/notifications', [ParentController::class, 'notifications'])->name('notifications');
+    Route::post('/notification/{notificationId}/read', [ParentController::class, 'markNotificationAsRead'])->name('notification.read');
 });

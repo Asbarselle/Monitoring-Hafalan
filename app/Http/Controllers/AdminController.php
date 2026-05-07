@@ -8,6 +8,7 @@ use App\Models\Hafalan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdminController extends Controller
 {
@@ -204,5 +205,27 @@ class AdminController extends Controller
         })->with(['santri', 'ustadz'])->latest()->paginate(10, ['*'], 'hp_page');
 
         return view('admin.hafalan.index', compact('l_hafalan', 'p_hafalan'));
+    }
+
+    /**
+     * Ekspor Data Hafalan ke PDF
+     */
+    public function exportHafalanPdf()
+    {
+        $hafalanData = Hafalan::with(['santri', 'ustadz'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $totalHafalan = $hafalanData->count();
+        $hafalanSelesai = $hafalanData->where('status', 'selesai')->count();
+        $statistikByStatus = $hafalanData->groupBy('status')->map(function($items) {
+            return $items->count();
+        });
+
+        $pdf = Pdf::loadView('admin.hafalan.pdf-export', compact('hafalanData', 'totalHafalan', 'hafalanSelesai', 'statistikByStatus'));
+        
+        $filename = 'Backup_Hafalan_' . date('Y-m-d_His') . '.pdf';
+        
+        return $pdf->download($filename);
     }
 }

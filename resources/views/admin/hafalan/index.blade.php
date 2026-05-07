@@ -13,6 +13,9 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-book"></i> Data Hafalan</h2>
+    <a href="{{ route('admin.hafalan.export-pdf') }}" class="btn btn-danger" target="_blank" title="Unduh backup data hafalan dalam format PDF">
+        <i class="bi bi-file-pdf"></i> Ekspor PDF
+    </a>
 </div>
 
 <div class="card">

@@ -5,6 +5,9 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-speedometer2"></i> Dashboard Admin</h2>
+    <a href="{{ route('admin.hafalan.export-pdf') }}" class="btn btn-danger" target="_blank" title="Unduh backup data hafalan dalam format PDF">
+        <i class="bi bi-download"></i> Ekspor PDF
+    </a>
 </div>
 
 <div class="row mb-4">

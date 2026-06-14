@@ -35,49 +35,32 @@ Sistem informasi monitoring hafalan Al-Qur'an untuk Pondok Pesantren Hilyatul Ir
 - Progress bar visualisasi
 - Detail lengkap setiap hafalan
 
-## 🆕 Fitur Cloud & Analytics (v2.0)
+## Audio Recording & Analysis
 
-### Cloud Storage Integration
-- **AWS S3 Integration**: Upload foto santri & audio hafalan ke cloud
-- **Auto Backup**: Automatic backup data hafalan ke S3
-- **Signed URLs**: Secure download links dengan expiry time
-- **Storage Statistics**: Monitor penggunaan storage
-
-### Advanced Analytics & Computation
-- **Progress Velocity**: Hitung kecepatan hafalan (verses per day/week/month)
-- **Completion Prediction**: Prediksi kapan hafalan akan selesai
-- **Audio Quality Analysis**: Automatic analysis kualitas audio (bitrate, codec, duration)
-- **Smart Recommendations**: AI-based recommendations untuk ustadz & orang tua
-- **Struggling Student Detection**: Identifikasi santri yang perlu bantuan
-- **Class Insights**: Analytics dashboard untuk per-class performance
-
-### API Endpoints
-- `GET /api/analytics/santri/{id}/progress` - Progress tracking
-- `GET /api/analytics/santri/{id}/prediction` - Completion prediction
-- `GET /api/analytics/santri/{id}/report` - Comprehensive report
-- `GET /api/analytics/class/{ustadzId}/insights` - Class analytics
-- `GET /api/analytics/audio/{hafalanId}/quality` - Audio quality metrics
-- `POST /api/analytics/process-audios` - Batch process audios
-
-### New Database Fields
-```
-Cloud Storage:
-- s3_audio_path, s3_audio_url, uploaded_to_cloud_at
-
-Audio Analysis:
-- audio_quality_score, audio_bitrate, audio_codec, is_audio_analyzed
-
-Analytics:
-- progress_percentage, days_to_completion, completion_status, analytics_insights
-```
+- Rekam audio hafalan dan simpan ke local storage
+- Putar dan unduh rekaman dari dashboard orang tua
+- Analisis metadata audio lokal untuk kebutuhan evaluasi kualitas
+- Ekspor PDF data hafalan untuk laporan
 
 ## Instalasi
 
 1. Clone repository atau extract file
 2. Install dependencies:
    ```bash
+   cd backend
    composer install
+   npm install
    ```
+3. Jalankan build aset:
+   ```bash
+   npm run build
+   ```
+4. Jalankan development server backend:
+   ```bash
+   php artisan serve
+   ```
+
+> Atau di Windows, jalankan `start-backend.bat` dari direktori root proyek untuk membuka aplikasi secara otomatis di `http://127.0.0.1:8000`.
 
 3. Setup environment (jika belum ada .env):
    ```bash
@@ -85,57 +68,32 @@ Analytics:
    php artisan key:generate
    ```
 
-4. **[OPTIONAL] Configure AWS S3 Cloud Storage:**
-   ```env
-   AWS_ACCESS_KEY_ID=your-key
-   AWS_SECRET_ACCESS_KEY=your-secret
-   AWS_DEFAULT_REGION=ap-southeast-1
-   AWS_BUCKET=simhafal-bucket
-   AWS_URL=https://simhafal-bucket.s3.amazonaws.com
-   FILESYSTEM_DISK=s3
-   ```
-   *Tanpa konfigurasi ini, sistem akan menggunakan local storage (default)*
+4. Pastikan database sudah dikonfigurasi di `.env`
 
-5. Pastikan database SQLite sudah ada di `database/database.sqlite`
-
-6. Jalankan migrations dan seeders:
+5. Jalankan migrations:
    ```bash
-   php artisan migrate:fresh --seed
+   php artisan migrate --force
    ```
 
-7. Buat symlink untuk storage:
+6. Buat symlink untuk storage:
    ```bash
    php artisan storage:link
    ```
 
-8. Jalankan server development:
+7. Jalankan server development:
    ```bash
    php artisan serve
    ```
 
-9. Akses aplikasi di `http://localhost:8000`
+8. Akses aplikasi di `http://localhost:8000`
 
-### Cloud Storage & Analytics (Optional Setup)
+### Audio Analysis (Opsional)
 
-Untuk mengaktifkan fitur cloud storage dan analytics advanced:
+Untuk menganalisis audio yang sudah tersimpan:
 
 ```bash
-# Buat config untuk cloud
-php artisan config:cache
-
-# Test AWS S3 connectivity
-php artisan tinker
->>> $service = app(\App\Services\CloudStorageService::class);
->>> $service->verifyConnection();  // Should return true
-
-# Trigger audio analysis untuk existing files
 php artisan hafalan:analyze-audios --limit=20
-
-# Recalculate predictions
-php artisan hafalan:recalculate-predictions
 ```
-
-Lihat [CLOUD_ANALYTICS_GUIDE.md](CLOUD_ANALYTICS_GUIDE.md) untuk dokumentasi lengkap.
 
 
 ## Kredensial Login
@@ -161,7 +119,7 @@ Lihat [CLOUD_ANALYTICS_GUIDE.md](CLOUD_ANALYTICS_GUIDE.md) untuk dokumentasi len
 - id, nama, nis, tempat_lahir, tanggal_lahir, jenis_kelamin, alamat, no_hp, foto, orang_tua_id, timestamps
 
 ### Tabel Hafalan
-- id, santri_id, ustadz_id, juz, surat, ayat_dari, ayat_sampai, status, catatan, tanggal_setoran, nilai, timestamps
+- id, santri_id, ustadz_id, juz, surat, ayat_dari, ayat_sampai, status, catatan, tanggal_setoran, nilai, audio_path, audio_filename, audio_duration, audio_quality_score, audio_bitrate, audio_codec, is_audio_analyzed, progress_percentage, days_to_completion, completion_status, analytics_insights, last_analyzed_at, timestamps
 
 ## Teknologi yang Digunakan
 
